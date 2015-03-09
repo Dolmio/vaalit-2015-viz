@@ -1,18 +1,19 @@
 "use strict";
 var R = require('ramda');
-var $ = require('jquery');
 var questions = require("./data/questions.json").questions;
 var groupedByDistrictData = cleanDefaultColumn(require("./data/district-mean.csv"));
 
 
 var groupedByPartyData = require("./data/party-mean.csv");
 var groupedByAgeData = require("./data/age-mean.csv");
-var groupedByGenderData = cleanNullColumn(require("./data/gender-mean.csv"))
+var groupedByGenderData = cleanNullColumn(require("./data/gender-mean.csv"));
 
 var variancePartyData = require("./data/party-variance.csv");
 var varianceDistrictData = cleanDefaultColumn(require("./data/district-variance.csv"));
 var varianceAgeData = require("./data/age-variance.csv");
 var varianceGenderData = cleanNullColumn(require("./data/gender-variance.csv"));
+
+var currentQuestion;
 
 function cleanNullColumn(data) {
     return cleanColumns(data, ['NULL']);
@@ -44,8 +45,7 @@ var dataMap = {
         "variance": varianceGenderData
     }
 };
-console.log(dataMap);
-var currentQuestion;
+
 function init() {
     var $previousQuestionButton = $(".previousQuestion");
     var $nextQuestionButton = $(".nextQuestion");
@@ -70,6 +70,7 @@ function init() {
     currentQuestion = 1;
     generateGraph(currentQuestion, $nextQuestionButton, $previousQuestionButton, selectedData);
 
+
 }
 
 
@@ -77,54 +78,95 @@ function init() {
 function generateGraph(questionNumber, $nextButton, $previousButton, selectedData) {
 
     var questionIndex = questionNumber - 1 ;
-    var ctx = document.getElementById("myChart").getContext("2d");
 
-    function formatYScale(scaleObject) {
-        switch(scaleObject.value) {
-            case "1": return "Täysin eri mieltä";
-            case "3": return "En osaa sanoa";
-            case "5": return "Täysin samaa mieltä";
-            default: return "";
-        }
-    }
-
-    var options = {
-        animation: false,
-        legendTemplate : "<ul> <h1>Joujou</h1></h></ul>",
-        scaleOverride: true,
-        scaleSteps: 4,
-        scaleStepWidth: 1,
-        scaleStartValue: 1,
-        scaleLabel : formatYScale,
-        showTooltips: false,
-        scaleFontFamily: "'Roboto'",
-        responsive: true
-
-
-    };
-    new Chart(ctx).Bar(generateDataSet(selectedData.mean[questionIndex]), options);
-    new Chart(document.getElementById("myChart2").getContext("2d")).Bar(generateDataSet(selectedData.variance[questionIndex]), options);
     $('.chartQuestion').text(questions[questionIndex]);
     $previousButton.prop('disabled', questionNumber == 1);
     $nextButton.prop('disabled', questionNumber == questions.length);
     $('.questionNumber').text(questionNumber);
-}
-function generateDataSet(question) {
-    return {
-        labels: R.keys(question),
-        datasets: [
-            {
-                label: "My First dataset",
-                fillColor: "rgba(220,220,220,0.5)",
-                strokeColor: "rgba(220,220,220,0.8)",
-                highlightFill: "rgba(220,220,220,0.75)",
-                highlightStroke: "rgba(220,220,220,1)",
-                data: R.values(question)
-            }
-        ]
-    }
+
+
+    c3.generate(getChartOptions(
+        R.values(selectedData.mean[questionIndex]),
+        R.values(selectedData.variance[questionIndex]),
+        R.keys(selectedData.mean[questionIndex])
+
+    ));
 }
 
+function getChartOptions(dataset1, dataset2, categories) {
+
+    function formatYScale(value) {
+        var num = Number(value);
+        switch(num) {
+            case  1: return "Täysin eri mieltä";
+            case  3: return "En osaa sanoa";
+            case  5: return "Täysin samaa mieltä";
+            default: return "";
+        }
+    }
+
+    return {
+        data: {
+            columns: [
+                R.prepend('vastausten keskiarvo', dataset1),
+                R.prepend('vastausten varianssi', dataset2)
+            ],
+            type: 'bar',
+            axes: {
+                data1: 'y',
+                data2: 'y2'
+            },
+            colors: {
+                'vastausten keskiarvo': "#A5DBEB",
+                'vastausten varianssi': 'rgba(220,220,220,0.8)'
+            }
+        },
+        padding: {
+            top: 0,
+
+            bottom: 0
+        },
+        legend: {
+            position: 'bottom'
+        },
+        bar: {
+            width: {
+                ratio: 0.5
+            }
+        },
+        axis: {
+            rotated: true,
+            x: {
+                type: 'category',
+                categories: categories,
+                tick: {
+                    multiline: false
+                }
+            },
+            y2: {
+                label: "Varianssi",
+                show: true,
+                min: 0,
+                max: 1,
+                tick: {
+                    count: 5
+                }
+            },
+            y: {
+                label: "Keskiarvo",
+                min: 1,
+                max: 5,
+                tick: {
+                    values: [1, 2, 3, 4, 5],
+                    format: formatYScale
+                }
+            }
+        },
+        tooltip: {
+            show: false
+        }
+    }
+}
 
 document.addEventListener('DOMContentLoaded', function () {
     init();

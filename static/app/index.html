@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <script src="Chart.min.js"></script>
+    <script src="jquery-2.1.3.min.js"></script>
+    <script src="bundle.js"></script>
+    <script src="bootstrap-3.3.2-dist/js/bootstrap.min.js"></script>
+    <link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="bootstrap-3.3.2-dist/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+
+<div id="chart-container">
+
+
+
+    <div class="container fill">
+        <div class="row">
+
+            <div class="col-md-4 col-sm-3 col-xs-12 question-panel">
+                <p>HS:n vuoden 2015 eduskuntavaalien vaalikonevastausten visualisointia.</p>
+                <p>Tekijä Juho Salmio</p>
+                <p>Kysymys <span class="questionNumber">1</span> / 30</p>
+                <p class="chartQuestion"></p>
+                <div class="btn-group" role="group" aria-label="...">
+                    <button class="previousQuestion btn btn-default">
+                        <span class="glyphicon glyphicon-menu-left" aria-hidden="true"></span>
+                        Edellinen kysymys
+
+                    </button>
+                    <button class="nextQuestion btn btn-default">
+                        Seuraava kysymys
+                        <span class="glyphicon glyphicon-menu-right" aria-hidden="true"></span>
+                    </button>
+                </div>
+                <div>
+                    <label>
+                        Ryhmittely:
+                    </label>
+                    <div class="btn-group group-selection" data-toggle="buttons">
+
+                        <label class="btn btn-info active">
+                            <input type="radio" name="group-type" value="district" checked/>
+                            Vaalipiiri
+                        </label>
+
+                        <label class="btn btn-info">
+                            <input type="radio" name="group-type" value="party"/>
+                            Puolue
+                        </label>
+
+                        <label class="btn btn-info">
+                            <input type="radio" name="group-type" value="age"/>
+                            Ikä
+                        </label>
+
+                        <label class="btn btn-info">
+                            <input type="radio" name="group-type" value="gender"/>
+                            Sukupuoli
+                        </label>
+                    </div>
+                </div>
+
+
+
+            </div>
+
+            <div class="col-md-8 col-sm-9 col-xs-12 chart-panel">
+                <p>Vastausten keskiarvo</p>
+                <canvas id="myChart" width="300" height="200"></canvas>
+                <p>Vastausten varianssi</p>
+                <canvas id="myChart2" width="300" height="200"></canvas>
+
+            </div>
+
+
+        </div>
+
+
+
+
+    </div>
+
+
+
+
+</div>
+
+
+
+</body>
+</html>

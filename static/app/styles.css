@@ -1,0 +1,33 @@
+body {
+    font-family: "Roboto",Helvetica,Arial,sans-serif;
+    height: 100%;
+}
+
+#chart-container .btn{
+    font-size: 12px;
+}
+#chart-container {
+    background-color: #f5f5f5;
+}
+
+#chart-container label{
+    font-weight: normal;
+    margin-top: 10px;
+}
+
+.chartQuestion {
+    min-height: 70px;
+}
+
+.question-panel {
+    padding-top: 20px;
+    padding-left: 20px;
+    padding-bottom: 10px;
+}
+.chart-panel {
+    background-color: white;
+    padding-top: 20px;
+}
+canvas{
+    padding: 20px;
+}

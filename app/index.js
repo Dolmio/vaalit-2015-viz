@@ -129,7 +129,7 @@ function genChart(categories, means, variances) {
             chart: {
                 animation: false,
                 zoomType: 'xy',
-                inverted: true
+                inverted: false
             },
             credits: {
                 enabled: false

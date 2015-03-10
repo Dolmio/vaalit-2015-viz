@@ -128,8 +128,7 @@ function genChart(categories, means, variances) {
         $('#container').highcharts({
             chart: {
                 animation: false,
-                zoomType: 'xy',
-                inverted: true
+                zoomType: 'xy'
             },
             credits: {
                 enabled: false

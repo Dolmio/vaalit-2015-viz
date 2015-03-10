@@ -50,7 +50,7 @@ function init() {
     var $previousQuestionButton = $(".previousQuestion");
     var $nextQuestionButton = $(".nextQuestion");
     var $selectionGroup = $(".group-selection label");
-    var selectedData = dataMap.district;
+    var selectedData = dataSource.district;
 
     $previousQuestionButton.on('click', function() {
         currentQuestion--;
@@ -63,7 +63,7 @@ function init() {
     });
 
     $selectionGroup.on('click', function() {
-        selectedData = dataMap[$(this).find('input')[0].value];
+        selectedData = dataSource[$(this).find('input')[0].value];
         generateGraph(currentQuestion, $nextQuestionButton, $previousQuestionButton, selectedData);
     });
 
@@ -83,11 +83,11 @@ function generateGraph(questionNumber, $nextButton, $previousButton, selectedDat
     $previousButton.prop('disabled', questionNumber == 1);
     $nextButton.prop('disabled', questionNumber == questions.length);
     $('.questionNumber').text(questionNumber);
+    console.log("Lol");
+    console.log(selectedData)
+    genChart(resultsByQuestion(questionNumber, selectedData));
 
-    var categories = R.keys(selectedData.mean[questionIndex]);
-    var means = toNumbers(R.values(selectedData.mean[questionIndex]));
-    var variances = R.values(selectedData.variance[questionIndex])
-    genChart(categories, means, variances);
+
 
 
 }
@@ -98,10 +98,9 @@ function toNumbers(strings) {
     }, strings);
 }
 
-function genChart(categories, means, variances) {
+function genChart(groupedData) {
 
-
-
+    console.log(groupedData);
     function formatYScale() {
         console.log(this.value);
         switch(this.value) {
@@ -111,164 +110,113 @@ function genChart(categories, means, variances) {
             default: return "";
         }
     }
-
-    function getPairs(means, variances) {
-        return R.map(function(zipped) {
-            var mean = zipped[0];
-            var variance = zipped[1];
-            var stdDev = Math.sqrt(variance);
-            return [mean - stdDev, mean + stdDev];
-            },
-        R.zip(means, variances));
-    }
-
-    var chart;
-    var pairs = getPairs(means, variances);
+    console.log(R.keys(groupedData));
+    console.log(R.values(groupedData));
     $(function () {
         $('#container').highcharts({
-            chart: {
-                animation: false,
-                zoomType: 'xy',
-                inverted: false
-            },
-            credits: {
-                enabled: false
-            },
-            plotOptions: {
-                series: {
-                    states: {
-                        hover: {
-                            enabled: false
-                        }
-                    }
-                }
-            },
-            title: {
-                text: 'Vastausten keskiarvo ja keskihajonta'
-            },
-            xAxis: [{
-                categories: categories
-            }],
-            yAxis: [{ // Primary yAxis
-                labels: {
-                    formatter: formatYScale,
-                    style: {
-                        color: Highcharts.getOptions().colors[1]
-                    }
-                },
-                title: {
-                    enabled: false,
-                    style: {
-                        color: Highcharts.getOptions().colors[1]
-                    }
-                },
-                min: 1,
-                max: 5
-            }],
 
-            tooltip: {
-                enabled: false,
-                shared: true
+            chart: {
+                type: 'boxplot'
             },
+
+            title: {
+                text: 'Highcharts Box Plot Example'
+            },
+
             legend: {
                 enabled: false
             },
-            series: [ {
-                name: 'Temperature',
-                type: 'spline',
-                data: means,
-                lineWidth: 0,
-                marker : {
-                    enabled : true,
-                    radius : 4
+
+            xAxis: {
+                categories: R.keys(groupedData),
+                title: {
+                    text: 'Experiment No.'
                 }
-            }, {
-                name: 'Keskihajonta',
-                type: 'errorbar',
-                data: pairs,
+            },
+
+            yAxis: {
+                title: {
+                    text: 'Observations'
+                },
+                plotLines: [{
+                    color: 'red',
+                    width: 1,
+                    label: {
+                        text: 'Theoretical mean: 932',
+                        align: 'center',
+                        style: {
+                            color: 'gray'
+                        }
+                    }
+                }]
+            },
+
+            series: [{
+                name: 'Observations',
+                data: [[760, 801, 848, 895, 965],
+                    [733, 853, 939, 980, 1080],
+                    [714, 762, 817, 870, 918],
+                    [724, 802, 806, 871, 950],
+                    [834, 836, 864, 882, 910],
+                    [760, 801, 848, 895, 965],
+                    [733, 853, 939, 980, 1080],
+                    [714, 762, 817, 870, 918],
+                    [724, 802, 806, 871, 950],
+                    [834, 836, 864, 882, 910],
+                    [724, 802, 806, 871, 950],
+                    [834, 836, 864, 882, 910]]
+                ,
                 tooltip: {
-                    pointFormat: '(error range: {point.low}-{point.high}°C)<br/>'
+                    headerFormat: '<em>Experiment No {point.key}</em><br/>'
                 }
             }]
+
         });
     });
 }
 
-function getChartOptions(dataset1, dataset2, categories) {
 
-    function formatYScale(value) {
-        var num = Number(value);
-        switch(num) {
-            case  1: return "Täysin eri mieltä";
-            case  3: return "En osaa sanoa";
-            case  5: return "Täysin samaa mieltä";
-            default: return "";
-        }
-    }
-
-    return {
-        data: {
-            columns: [
-                R.prepend('vastausten keskiarvo', dataset1),
-                R.prepend('vastausten varianssi', dataset2)
-            ],
-            type: 'bar',
-            axes: {
-                data1: 'y',
-                data2: 'y2'
-            },
-            colors: {
-                'vastausten keskiarvo': "#A5DBEB",
-                'vastausten varianssi': 'rgba(220,220,220,0.8)'
-            }
-        },
-        padding: {
-            top: 0,
-
-            bottom: 0
-        },
-        legend: {
-            position: 'bottom'
-        },
-        bar: {
-            width: {
-                ratio: 0.5
-            }
-        },
-        axis: {
-            rotated: true,
-            x: {
-                type: 'category',
-                categories: categories,
-                tick: {
-                    multiline: false
-                }
-            },
-            y2: {
-                label: "Varianssi",
-                show: true,
-                min: 0,
-                max: 1,
-                tick: {
-                    count: 5
-                }
-            },
-            y: {
-                label: "Keskiarvo",
-                min: 1,
-                max: 5,
-                tick: {
-                    values: [1, 2, 3, 4, 5],
-                    format: formatYScale
-                }
-            }
-        },
-        tooltip: {
-            show: false
-        }
-    }
-}
 
 document.addEventListener('DOMContentLoaded', function () {
     init();
 });
+
+
+var hsData = require("./data/out.csv");
+
+function groupBy(property) {
+    return R.groupBy(function(object) {
+        return object[property];
+    })
+}
+
+function resultsByQuestion(questionNumber, groupedData) {
+    var questionKey = "q" + questionNumber;
+    return R.mapObj(function(group) {
+        return R.filter(R.identity, R.map(getNumProperty(questionKey), group))
+    }, groupedData)
+}
+
+function getNumProperty(property) {
+    return function(obj) {
+        return Number(obj[property]);
+    };
+}
+
+function isNumber(num) {
+    return !isNaN(num);
+}
+
+var byDistrict = groupBy("district");
+
+
+var groupedByDistrict = byDistrict(hsData);
+
+var dataSource = {
+    district: groupBy("district")(hsData),
+    party: groupBy("party")(hsData),
+    gender: groupBy("gender")(hsData),
+    age: groupBy("age")(hsData)
+};
+
+

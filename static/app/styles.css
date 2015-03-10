@@ -25,6 +25,7 @@ body {
 .chart-panel {
     background-color: white;
     padding-top: 20px;
+    margin-bottom: 50px;
 }
 canvas{
     padding: 20px;

@@ -128,10 +128,20 @@ function genChart(categories, means, variances) {
         $('#container').highcharts({
             chart: {
                 animation: false,
-                zoomType: 'xy'
+                zoomType: 'xy',
+                inverted: true
             },
             credits: {
                 enabled: false
+            },
+            plotOptions: {
+                series: {
+                    states: {
+                        hover: {
+                            enabled: false
+                        }
+                    }
+                }
             },
             title: {
                 text: 'Vastausten keskiarvo ja keskihajonta'

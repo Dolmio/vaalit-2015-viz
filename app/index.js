@@ -84,67 +84,99 @@ function generateGraph(questionNumber, $nextButton, $previousButton, selectedDat
     $nextButton.prop('disabled', questionNumber == questions.length);
     $('.questionNumber').text(questionNumber);
 
-
-    c3.generate(getChartOptions(
-        R.values(selectedData.mean[questionIndex]),
-        R.values(selectedData.variance[questionIndex]),
-        R.keys(selectedData.mean[questionIndex])
-
-    ));
-    genChart(R.keys(selectedData.mean[questionIndex]), R.values(selectedData.mean[questionIndex]));
+    var categories = R.keys(selectedData.mean[questionIndex]);
+    var means = toNumbers(R.values(selectedData.mean[questionIndex]));
+    var variances = R.values(selectedData.variance[questionIndex])
+    genChart(categories, means, variances);
 
 
 }
 
-function genChart(categories, means) {
+function toNumbers(strings) {
+    return R.map(function(val) {
+        return Number(val);
+    }, strings);
+}
+
+function genChart(categories, means, variances) {
+
+
+
+    function formatYScale() {
+        console.log(this.value);
+        switch(this.value) {
+            case  1: return "Täysin eri mieltä";
+            case  3: return "En osaa sanoa";
+            case  5: return "Täysin samaa mieltä";
+            default: return "";
+        }
+    }
+
+    function getPairs(means, variances) {
+        return R.map(function(zipped) {
+            var mean = zipped[0];
+            var variance = zipped[1];
+            var stdDev = Math.sqrt(variance);
+            return [mean - stdDev, mean + stdDev];
+            },
+        R.zip(means, variances));
+    }
+
     var chart;
+    var pairs = getPairs(means, variances);
     $(function () {
         $('#container').highcharts({
             chart: {
-                zoomType: 'xy'
+                animation: false,
+                zoomType: 'xy',
+                inverted: true
+            },
+            credits: {
+                enabled: false
             },
             title: {
-                text: 'Temperature vs Rainfall'
+                text: 'Vastausten keskiarvo ja keskihajonta'
             },
             xAxis: [{
-                categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+                categories: categories
             }],
             yAxis: [{ // Primary yAxis
                 labels: {
-                    format: '{value} °C',
+                    formatter: formatYScale,
                     style: {
                         color: Highcharts.getOptions().colors[1]
                     }
                 },
                 title: {
-                    text: 'Temperature',
+                    enabled: false,
                     style: {
                         color: Highcharts.getOptions().colors[1]
                     }
-                }
+                },
+                min: 1,
+                max: 5
             }],
 
             tooltip: {
                 enabled: false,
                 shared: true
             },
-
+            legend: {
+                enabled: false
+            },
             series: [ {
                 name: 'Temperature',
                 type: 'spline',
-                data: [7.0, 6.9, 9.5, 14.5, 18.2, 21.5, 25.2, 26.5, 23.3, 18.3, 13.9, 9.6],
-                tooltip: {
-                    pointFormat: '<span style="font-weight: bold; color: {series.color}">{series.name}</span>: <b>{point.y:.1f}°C</b> '
-                },
+                data: means,
                 lineWidth: 0,
                 marker : {
                     enabled : true,
                     radius : 4
                 }
             }, {
-                name: 'Temperature error',
+                name: 'Keskihajonta',
                 type: 'errorbar',
-                data: [[6, 8], [5.9, 7.6], [9.4, 10.4], [14.1, 15.9], [18.0, 20.1], [21.0, 24.0], [23.2, 25.3], [26.1, 27.8], [23.2, 23.9], [18.0, 21.1], [12.9, 14.0], [7.6, 10.0]],
+                data: pairs,
                 tooltip: {
                     pointFormat: '(error range: {point.low}-{point.high}°C)<br/>'
                 }

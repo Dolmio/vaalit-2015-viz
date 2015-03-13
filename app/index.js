@@ -4,6 +4,9 @@ var questions = require("./data/questions.json").questions;
 var currentQuestion;
 var hsData = require("./data/HS-05-03-2015.csv");
 var ageData = R.omit(["NULL"],groupBy("age")(hsData));
+var groups = ["district", "party", "age", "gender"];
+
+
 
 var dataSource = {
     district: R.omit(["default"], groupBy("district")(hsData)),
@@ -20,36 +23,58 @@ function init() {
     var $previousQuestionButton = $(".previousQuestion");
     var $nextQuestionButton = $(".nextQuestion");
     var $selectionGroup = $(".group-selection label");
-    var selectedData = dataSource.district;
+    var selectedGroup = "district";
+    currentQuestion = 1;
 
     $previousQuestionButton.on('click', function() {
         currentQuestion--;
-        generateGraph(currentQuestion, $nextQuestionButton, $previousQuestionButton, selectedData);
+        update();
     });
 
     $nextQuestionButton.on('click', function() {
         currentQuestion++;
-        generateGraph(currentQuestion, $nextQuestionButton, $previousQuestionButton, selectedData);
+        update();
     });
 
     $selectionGroup.on('click', function() {
-        selectedData = dataSource[$(this).find('input')[0].value];
-        generateGraph(currentQuestion, $nextQuestionButton, $previousQuestionButton, selectedData);
+        selectedGroup = $(this).find('input')[0].value;
+        update();
     });
 
-    currentQuestion = 1;
-    generateGraph(currentQuestion, $nextQuestionButton, $previousQuestionButton, selectedData);
+    function update() {
+        updateDOM(currentQuestion, $nextQuestionButton, $previousQuestionButton,$selectionGroup, selectedGroup);
+        setLocationHash(currentQuestion, selectedGroup);
+    }
+
+    parseLocationHash();
+    update();
+
+    function parseLocationHash() {
+        var hash = window.location.hash;
+        var splitted = hash.split("/");
+        if(splitted.length == 2){
+            var questionNumber = Number(R.substringFrom(1, splitted[0]));
+            if(isNumber(questionNumber) && questionNumber >= 1 && questionNumber <= questions.length && R.contains(splitted[1], groups)){
+                currentQuestion = questionNumber;
+                selectedGroup = splitted[1];
+            }
+        }
+    }
 }
 
-function generateGraph(questionNumber, $nextButton, $previousButton, selectedData) {
+function setLocationHash(question, group) {
+    window.location.hash =  question + "/" + group;
+}
+
+function updateDOM(questionNumber, $nextButton, $previousButton,$selectionGroup, selectedGroup) {
 
     var questionIndex = questionNumber - 1 ;
-
+    $selectionGroup.find('[value="' + selectedGroup + '"]').first().parent().button('toggle');
     $('.chartQuestion').text(questions[questionIndex]);
     $previousButton.prop('disabled', questionNumber == 1);
     $nextButton.prop('disabled', questionNumber == questions.length);
     $('.questionNumber').text(questionNumber);
-    var res = resultsByQuestion(questionNumber, selectedData);
+    var res = resultsByQuestion(questionNumber, dataSource[selectedGroup]);
     generateChart(R.values(res), R.keys(res));
 
 }

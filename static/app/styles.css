@@ -30,3 +30,32 @@ body {
 canvas{
     padding: 20px;
 }
+
+.axis.y {
+    font-size: 9px;
+}
+
+.axis.x {
+    font-size: 9px;
+}
+.axis path, .axis line {
+    fill: none;
+    stroke: #000;
+    stroke-width: 1px;
+    color-rendering: optimizeQuality;
+    shape-rendering: crispEdges;
+    text-rendering: geometricPrecision;
+
+}
+
+.bar rect {
+    shape-rendering: crispEdges;
+}
+
+.axis.y .tick line {
+    display: none;
+}
+
+.axis path {
+    display: none;
+}

@@ -1,50 +1,20 @@
 "use strict";
 var R = require('ramda');
 var questions = require("./data/questions.json").questions;
-var groupedByDistrictData = cleanDefaultColumn(require("./data/district-mean.csv"));
-
-
-var groupedByPartyData = require("./data/party-mean.csv");
-var groupedByAgeData = require("./data/age-mean.csv");
-var groupedByGenderData = cleanNullColumn(require("./data/gender-mean.csv"));
-
-var variancePartyData = require("./data/party-variance.csv");
-var varianceDistrictData = cleanDefaultColumn(require("./data/district-variance.csv"));
-var varianceAgeData = require("./data/age-variance.csv");
-var varianceGenderData = cleanNullColumn(require("./data/gender-variance.csv"));
-
 var currentQuestion;
+var hsData = require("./data/HS-05-03-2015.csv");
+var ageData = R.omit(["NULL"],groupBy("age")(hsData));
 
-function cleanNullColumn(data) {
-    return cleanColumns(data, ['NULL']);
-}
-
-function cleanDefaultColumn(data) {
-    return cleanColumns(data, ['default']);
-}
-function cleanColumns(data, columns) {
-    return R.map(function(question) { return R.omit(columns, question)}, data);
-}
-
-var dataMap = {
-    "district" :
-        {
-         "mean": groupedByDistrictData,
-         "variance": varianceDistrictData
-        },
-    "party":  {
-        "mean": groupedByPartyData,
-        "variance": variancePartyData
-    },
-    "age":  {
-        "mean": groupedByAgeData,
-        "variance": varianceAgeData
-    },
-    "gender":  {
-        "mean": groupedByGenderData,
-        "variance": varianceGenderData
-    }
+var dataSource = {
+    district: R.omit(["default"], groupBy("district")(hsData)),
+    party: R.omit(["Mika Vähäkangas", "Kristiina Kreisler"], groupBy("party")(hsData)),
+    gender: R.omit(["NULL"], groupBy("gender")(hsData)),
+    age: aggregateAgeDataToIntervals(ageData, 5)
 };
+
+document.addEventListener('DOMContentLoaded', function () {
+    init();
+});
 
 function init() {
     var $previousQuestionButton = $(".previousQuestion");
@@ -69,11 +39,7 @@ function init() {
 
     currentQuestion = 1;
     generateGraph(currentQuestion, $nextQuestionButton, $previousQuestionButton, selectedData);
-
-
 }
-
-
 
 function generateGraph(questionNumber, $nextButton, $previousButton, selectedData) {
 
@@ -83,106 +49,19 @@ function generateGraph(questionNumber, $nextButton, $previousButton, selectedDat
     $previousButton.prop('disabled', questionNumber == 1);
     $nextButton.prop('disabled', questionNumber == questions.length);
     $('.questionNumber').text(questionNumber);
-    console.log("Lol");
-    console.log(selectedData)
-    genChart(resultsByQuestion(questionNumber, selectedData));
-
-
-
+    var res = resultsByQuestion(questionNumber, selectedData);
+    generateChart(R.values(res), R.keys(res));
 
 }
 
-function toNumbers(strings) {
-    return R.map(function(val) {
-        return Number(val);
-    }, strings);
-}
-
-function genChart(groupedData) {
-
-    console.log(groupedData);
-    function formatYScale() {
-        console.log(this.value);
-        switch(this.value) {
-            case  1: return "Täysin eri mieltä";
-            case  3: return "En osaa sanoa";
-            case  5: return "Täysin samaa mieltä";
-            default: return "";
-        }
+function formatXScale(value) {
+    switch(value) {
+        case  1: return "Täysin eri mieltä";
+        case  3: return "En osaa sanoa";
+        case  5: return "Täysin samaa mieltä";
+        default: return "";
     }
-    console.log(R.keys(groupedData));
-    console.log(R.values(groupedData));
-    $(function () {
-        $('#container').highcharts({
-
-            chart: {
-                type: 'boxplot'
-            },
-
-            title: {
-                text: 'Highcharts Box Plot Example'
-            },
-
-            legend: {
-                enabled: false
-            },
-
-            xAxis: {
-                categories: R.keys(groupedData),
-                title: {
-                    text: 'Experiment No.'
-                }
-            },
-
-            yAxis: {
-                title: {
-                    text: 'Observations'
-                },
-                plotLines: [{
-                    color: 'red',
-                    width: 1,
-                    label: {
-                        text: 'Theoretical mean: 932',
-                        align: 'center',
-                        style: {
-                            color: 'gray'
-                        }
-                    }
-                }]
-            },
-
-            series: [{
-                name: 'Observations',
-                data: [[760, 801, 848, 895, 965],
-                    [733, 853, 939, 980, 1080],
-                    [714, 762, 817, 870, 918],
-                    [724, 802, 806, 871, 950],
-                    [834, 836, 864, 882, 910],
-                    [760, 801, 848, 895, 965],
-                    [733, 853, 939, 980, 1080],
-                    [714, 762, 817, 870, 918],
-                    [724, 802, 806, 871, 950],
-                    [834, 836, 864, 882, 910],
-                    [724, 802, 806, 871, 950],
-                    [834, 836, 864, 882, 910]]
-                ,
-                tooltip: {
-                    headerFormat: '<em>Experiment No {point.key}</em><br/>'
-                }
-            }]
-
-        });
-    });
 }
-
-
-
-document.addEventListener('DOMContentLoaded', function () {
-    init();
-});
-
-
-var hsData = require("./data/out.csv");
 
 function groupBy(property) {
     return R.groupBy(function(object) {
@@ -207,16 +86,146 @@ function isNumber(num) {
     return !isNaN(num);
 }
 
-var byDistrict = groupBy("district");
+function partition(array, n) {
+    return array.length ? [array.splice(0, n)].concat(partition(array, n)) : [];
+}
+
+function aggregateAgeDataToIntervals(data, interval) {
+    var ageRanges = partition(R.keys(data), interval);
+
+    var newAgeKeys = R.map(function(range) {
+        return R.head(range) + "-" + R.last(range);
+    }, ageRanges);
+    var combinedAgeDataValues = R.map(function(ageRange){
+        return R.reduce(function(res, age) {
+            return R.concat(res, data[age]);
+        },[], ageRange);
+    }, ageRanges);
+
+    return R.zipObj(newAgeKeys, combinedAgeDataValues);
+
+}
+
+function addHistogram(svg, results, width, height, domain, imposeMax, color){
+
+    var resolution=5;
+    var data = d3.layout.histogram().bins(resolution)(results);
+
+    var y = d3.scale.linear()
+        .range([0, height])
+        .domain([0, Math.max(imposeMax, d3.max(data, function(d) { return d.y; }))]);
+
+    var x = d3.scale.linear()
+        .range([0, width])
+        .domain(domain);
+
+    var topHistogram = svg.append("g");
+
+    var bottomHistogram = svg.append("g");
+
+    generateHistogram(topHistogram);
+    generateHistogram(bottomHistogram);
+
+    function generateHistogram(svgObject) {
+        var bar = svgObject.selectAll(".bar").data(data).enter().append("g")
+            .attr("class", "bar")
+            .attr("transform", function(d) { return "translate(" + (x(d.x)) + "," + height / 2 + ")"; });
+
+        bar.append("rect")
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr("width", width / resolution)
+            .attr("height", function(d) {return  y(d.y) / 2})
+            .attr("fill", color);
+    }
+    topHistogram.attr("transform", "translate(0, "+ height + ") scale(1,-1)");
+
+}
+function addMean(svg, results, width, height, domain, boxColor, boxInsideColor){
+
+    var x = d3.scale.linear()
+        .range([0, width])
+        .domain(domain);
+
+    var outerCircleRadius =  0.1 * height;
+    var innerCircleRatio = 0.8;
+    svg.append("circle")
+        .attr("class", "mean")
+        .attr("cx", x(d3.mean(results)))
+        .attr("cy", height / 2)
+        .attr("r", outerCircleRadius)
+        .style("fill", boxColor)
+        .style("stroke", 'None');
+
+    svg.append("circle")
+        .attr("class", "mean")
+        .attr("cx", x(d3.mean(results)))
+        .attr("cy", height / 2)
+        .attr("r", innerCircleRatio * outerCircleRadius)
+        .style("fill", boxInsideColor)
+        .style("stroke", 'None');
 
 
-var groupedByDistrict = byDistrict(hsData);
+}
 
-var dataSource = {
-    district: groupBy("district")(hsData),
-    party: groupBy("party")(hsData),
-    gender: groupBy("gender")(hsData),
-    age: groupBy("age")(hsData)
-};
+function generateChart(groupedData, categories) {
+    var margin={top:10, bottom:30, left:90, right:50};
+
+    var width=330;
+    var categoryHeight=30;
+    var categorySpacing=5;
+    var chartHeight = categoryHeight * categories.length + categorySpacing * categories.length;
+    var totalHeight = chartHeight + margin.bottom  + margin.top;
+
+    var domain=[0.5, 5.5];
+
+    var d3ObjId="chart";
+    $("#" + d3ObjId).empty();
+
+    var x = d3.scale.linear()
+        .range([margin.left, width-margin.right])
+        .domain(domain);
+
+    var y = d3.scale.ordinal()
+        .domain(categories)
+        .rangeBands([0, chartHeight]);
+
+    var yAxis = d3.svg.axis()
+        .scale(y)
+        .ticks(categories.length)
+        .outerTickSize(0)
+        .orient("left");
+    var xAxis = d3.svg.axis()
+        .scale(x)
+        .tickValues([1,3,5])
+        .outerTickSize(0)
+        .tickFormat(formatXScale)
+        .orient("bottom");
 
 
+    var svg = d3.select("#"+d3ObjId)
+        .append("svg")
+        .attr("width", width)
+        .attr("height", totalHeight);
+
+    var dataDomain = [1,5];
+    var chartingAreaWidth = width - margin.left - margin.right;
+
+    for(var i=0; i<groupedData.length; i++){
+        groupedData[i]=groupedData[i].sort(d3.ascending);
+        var g=svg.append("g").attr("transform", "translate(" + margin.left + "," + (i*(categoryHeight+categorySpacing))+ ")");
+        addHistogram(g, groupedData[i], chartingAreaWidth, categoryHeight, dataDomain, categoryHeight/2, "#cccccc");
+        addMean(g, groupedData[i], chartingAreaWidth, categoryHeight, domain, "black", "#5BC0DE");
+
+    }
+
+    svg.append("g")
+        .attr('class', 'axis x')
+        .attr("transform", "translate("+0+"," + (totalHeight - margin.bottom) + ")")
+        .call(xAxis);
+
+    svg.append("g")
+        .attr('class', 'axis y')
+        .attr("transform", "translate("+margin.left+",0)")
+        .call(yAxis);
+}

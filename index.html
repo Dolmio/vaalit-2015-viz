@@ -5,16 +5,11 @@
     <title></title>
     <link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" type="text/css" href="static/app/bootstrap-3.3.2-dist/css/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="static/app/c3.min.css">
     <link rel="stylesheet" type="text/css" href="static/app/styles.css">
     <script src="static/app/d3.min.js"></script>
-    <script src="static/app/c3.min.js"></script>
     <script src="static/app/jquery-2.1.3.min.js"></script>
     <script src="static/app/bootstrap-3.3.2-dist/js/bootstrap.min.js"></script>
-    <script src="static/app/Highcharts-4.1.3/js/highcharts.js"></script>
-    <script src="static/app/Highcharts-4.1.3/js/highcharts-more.js"></script>
     <script src="static/app/bundle.js"></script>
-
 </head>
 <body>
 
@@ -22,8 +17,12 @@
     <div class="container">
         <div class="row">
             <div class="col-md-4 col-sm-3 col-xs-12 question-panel">
-                <p>HS:n vuoden 2015 eduskuntavaalien vaalikonevastausten visualisointia. Vaalikoneessa ehdokas vastaa väittämiin kokonaisluvuilla 1-5, jossa 1 tarkoittaa 'Täysin eri mieltä' ja 5 'Täysin samaa mieltä'. </p>
-                <p>Tekijä <a href="https://twitter.com/Dolmaister">Juho Salmio</a></p>
+                <p>HS:n vuoden 2015 eduskuntavaalien vaalikonevastausten visualisointia.
+                </p>
+                <p> Vaalikoneessa ehdokas vastaa väittämiin kokonaisluvuilla 1-5, jossa 1 tarkoittaa 'Täysin eri mieltä' ja 5 'Täysin samaa mieltä'.
+                    Ympyrät kuvaavat ryhmän vastausten keskiarvoa ja histogrammi vastausten jakautumista ryhmän kesken.</p>
+                <p>Data sisältää vastaukset 1520 ehdokkaalta.</p>
+                <p>Tekijä <a href="https://twitter.com/Dolmaister">Juho Salmio</a> Data: <a href="http://www.hs.fi/politiikka/a1305929269692">HS</a></p>
                 <p>Kysymys <span class="questionNumber">1</span> / 30</p>
                 <p class="chartQuestion"></p>
                 <div class="btn-group" role="group" aria-label="...">
@@ -67,7 +66,7 @@
             </div>
 
             <div class="col-md-8 col-sm-9 col-xs-12 chart-panel">
-                <div id="container" style="height: 400px; margin: auto; min-width: 310px; max-width: 600px"></div>
+                <div id="chart"></div>
             </div>
         </div>
     </div>

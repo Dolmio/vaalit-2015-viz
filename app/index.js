@@ -23,7 +23,7 @@ function init() {
     var $previousQuestionButton = $(".previousQuestion");
     var $nextQuestionButton = $(".nextQuestion");
     var $selectionGroup = $(".group-selection label");
-    var selectedGroup = "district";
+    var selectedGroup = "party";
     currentQuestion = 1;
 
     $previousQuestionButton.on('click', function() {

@@ -1,7 +1,6 @@
 "use strict";
 var R = require('ramda');
 var questions = require("./data/questions.json").questions;
-var currentQuestion;
 var hsData = require("./data/HS-05-03-2015.csv");
 var ageData = R.omit(["NULL"],groupBy("age")(hsData));
 var groups = ["district", "party", "age", "gender"];
@@ -24,7 +23,7 @@ function init() {
     var $nextQuestionButton = $(".nextQuestion");
     var $selectionGroup = $(".group-selection label");
     var selectedGroup = "party";
-    currentQuestion = 1;
+    var currentQuestion = 1;
 
     $previousQuestionButton.on('click', function() {
         currentQuestion--;

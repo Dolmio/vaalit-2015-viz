@@ -1,8 +1,14 @@
 <!DOCTYPE html>
 <html>
-<head lang="en">
+<head lang="fi">
     <meta charset="UTF-8">
-    <title></title>
+    <title>Vaalikonevisualisaatio 2015</title>
+    <meta property="og:url" content="http://dolmio.github.io/vaalit-2015-viz"/>
+    <meta property="og:title" content="HS:n vaalikonevastausten visualisointi"/>
+    <meta property="og:description" content="Helposti lähestyttävä vaalikonevisualisointi,
+     jonka avulla näet vastausten keskiarvot ja jakaumat ryhmiteltynä vaalipiirin, puolueen, iän ja sukupuolen mukaan."/>
+    <meta property="og:site_name" content="Vaalikone visualisaatio"/>
+    <meta property="og:image" content="http://dolmio.github.io/vaalit-2015-viz/static/app/preview.png"/>
     <link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" type="text/css" href="static/app/bootstrap-3.3.2-dist/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="static/app/styles.css">
@@ -12,6 +18,25 @@
     <script src="static/app/bundle.js"></script>
 </head>
 <body>
+
+<div id="fb-root"></div>
+<script>
+    window.fbAsyncInit = function() {
+        FB.init({
+            appId      : '476677779152340',
+            xfbml      : true,
+            version    : 'v2.2'
+        });
+    };
+
+    (function(d, s, id){
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) {return;}
+        js = d.createElement(s); js.id = id;
+        js.src = "//connect.facebook.net/en_US/sdk.js";
+        fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+</script>
 
 <div id="chart-container">
     <div class="container">
@@ -23,6 +48,12 @@
                     Ympyrät kuvaavat ryhmän vastausten keskiarvoa ja histogrammi vastausten jakautumista ryhmän kesken.</p>
                 <p>Data sisältää vastaukset 1520 ehdokkaalta.</p>
                 <p>Tekijä <a href="https://twitter.com/Dolmaister">Juho Salmio</a> Data: <a href="http://www.hs.fi/politiikka/a1305929269692">HS</a></p>
+                <div
+                        class="fb-like"
+                        data-share="true"
+                        data-width="450"
+                        data-show-faces="false">
+                </div>
                 <p>Kysymys <span class="questionNumber">1</span> / 30</p>
 
                 <div class="btn-group" role="group" aria-label="...">

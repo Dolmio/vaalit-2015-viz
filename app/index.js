@@ -10,9 +10,14 @@ var groups = ["district", "party", "age", "gender"];
 var dataSource = addTotalGroup({
     district: R.omit(["default"], groupBy("district")(hsData)),
     party: R.omit(["Mika Vähäkangas", "Kristiina Kreisler"], groupBy("party")(hsData)),
-    gender: R.omit(["NULL"], groupBy("gender")(hsData)),
+    gender: translateGroupsToFinnish(R.omit(["NULL"], groupBy("gender")(hsData))),
     age: aggregateAgeDataToIntervals(ageData, 5)
 });
+
+function translateGroupsToFinnish(genderData) {
+  return {"Miehet" : genderData["MALE"],
+          "Naiset" : genderData["FEMALE"]};
+}
 
 function addTotalGroup(dataSource) {
   return R.mapObj(function(groupObj) {

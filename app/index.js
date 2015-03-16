@@ -7,12 +7,28 @@ var groups = ["district", "party", "age", "gender"];
 
 
 
-var dataSource = {
+var dataSource = addTotalGroup({
     district: R.omit(["default"], groupBy("district")(hsData)),
     party: R.omit(["Mika Vähäkangas", "Kristiina Kreisler"], groupBy("party")(hsData)),
     gender: R.omit(["NULL"], groupBy("gender")(hsData)),
     age: aggregateAgeDataToIntervals(ageData, 5)
-};
+});
+
+function addTotalGroup(dataSource) {
+  return R.mapObj(function(groupObj) {
+    return addTotal(groupObj);
+  }, dataSource);
+}
+
+function addTotal(groupObj) {
+  return R.assoc("Yhteensä", getTotal(groupObj), groupObj);
+}
+
+function getTotal(groupObj) {
+  return R.reduce(function(res, cur) {
+    return R.concat(res, groupObj[cur]);
+  }, [], R.keys(groupObj));
+}
 
 document.addEventListener('DOMContentLoaded', function () {
     init();
